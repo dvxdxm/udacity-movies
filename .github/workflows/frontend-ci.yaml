@@ -1,14 +1,9 @@
 name: Frontend CI
-
-# Triggers for the workflow
-on:
-  workflow_dispatch:
-  pull_request:
-
-# Jobs defined in the workflow
+"on":
+  workflow_dispatch: null
+  pull_request: null
 jobs:
   lint:
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -21,16 +16,14 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+          key: "${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}"
           restore-keys: |
             ${{ runner.os }}-npm-
       - name: Install dependencies
         run: npm install
       - name: Run linting
         run: npm run lint
-
   test:
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
     needs: lint
     steps:
@@ -40,24 +33,22 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: latest
-     - name: Cache dependencies
+      - name: Cache dependencies
         uses: actions/cache@v2
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+          key: "${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}"
           restore-keys: |
             ${{ runner.os }}-npm-
-
       - name: Install dependencies
         run: npm install
-
       - name: Run tests
         run: npm run test
-
   build:
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
-    needs: [lint, test]
+    needs:
+      - lint
+      - test
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -69,12 +60,12 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+          key: "${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}"
           restore-keys: |
             ${{ runner.os }}-npm-
-
       - name: Install dependencies
         run: npm install
       - name: Build application using Docker
-        run: |
-          docker build --build-arg REACT_APP_MOVIE_API_URL=http://localhost:3000 --tag=mp-frontend:latest .
+        run: >
+          docker build --build-arg REACT_APP_MOVIE_API_URL=http://localhost:3000
+          --tag=mp-frontend:latest .
