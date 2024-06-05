@@ -16,7 +16,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ~/.npm
-          key: "${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}"
+          key: "${{ runner.os }}-npm-${{ hashFiles('**/starter/frontend/package-lock.json') }}"
           restore-keys: |
             ${{ runner.os }}-npm-
       - name: Install dependencies
@@ -60,7 +60,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ~/.npm
-          key: "${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}"
+          key: "${{ runner.os }}-npm-${{ hashFiles('**/starter/frontend/package-lock.json') }}"
           restore-keys: |
             ${{ runner.os }}-npm-
       - name: Install dependencies
