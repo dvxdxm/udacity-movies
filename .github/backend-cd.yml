@@ -74,8 +74,8 @@ jobs:
 
       - name: Push to ECR
         run: |
-          docker tag mp-backend:$GITHUB_SHA <your-account-id>.dkr.ecr.<region>.amazonaws.com/mp-backend:$GITHUB_SHA
-          docker push <your-account-id>.dkr.ecr.<region>.amazonaws.com/mp-backend:$GITHUB_SHA
+          docker tag mp-backend:$GITHUB_SHA 187455150335.dkr.ecr.us-east-1.amazonaws.com/mp-backend:$GITHUB_SHA
+          docker push 187455150335.dkr.ecr.us-east-1.amazonaws.com/mp-backend:$GITHUB_SHA
 
   deploy:
     runs-on: ubuntu-latest
@@ -92,5 +92,5 @@ jobs:
       - name: Deploy to Kubernetes
         run: |
           cd backend/k8s
-          kustomize edit set image backend=<your-account-id>.dkr.ecr.<region>.amazonaws.com/mp-backend:$GITHUB_SHA
+          kustomize edit set image backend=187455150335.dkr.ecr.us-east-1.amazonaws.com/mp-backend:$GITHUB_SHA
           kustomize build | kubectl apply -f -
