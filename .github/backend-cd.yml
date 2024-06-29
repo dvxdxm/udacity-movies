@@ -1,0 +1,61 @@
+name: Backend Continuous Deployment
+
+on: 
+  push:
+    branches: 
+      - main
+  workflow_dispatch:
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup NodeJS
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: Restore Cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run lint
+        run: npm run lint
+
+      - name: Run tests
+        run: npm run test
+
+      - name: Build Docker image
+        run: docker build -t backend .
+
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          region: us-east-1
+
+      - name: Tag Docker Image
+        run: docker tag backend:latest 151911597338.dkr.ecr.us-east-1.amazonaws.com/backend:latest
+
+      - name: Push Docker image to ECR
+        run: docker push 151911597338.dkr.ecr.us-east-1.amazonaws.com/backend:latest
+
+      - name: Setup Kubectl
+        uses: azure/setup-kubectl@v1
+
+      - name: Deploy to Kubernetes
+        run: kubectl apply -f deployment.yml
+        env:
+          KUBECONFIG_FILE: ${{ secrets.KUBECONFIG_FILE }}

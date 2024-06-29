@@ -84,3 +84,4 @@ jobs:
 
       - name: Build application with Docker
         run: npm run build
+
