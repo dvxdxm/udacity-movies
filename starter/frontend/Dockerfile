@@ -1,23 +1,24 @@
-# Specify a base image
-FROM node:14 as build-stage
+FROM  public.ecr.aws/docker/library/node:18.14.2-alpine3.17
 
-# Set a working directory
+ARG REACT_APP_MOVIE_API_URL
+ENV REACT_APP_MOVIE_API_URL=${REACT_APP_MOVIE_API_URL}
+
 WORKDIR /app
 
-# Copy package.json and package-lock.json before other files
-# Utilize Docker cache to save re-installing dependencies if unchanged
+# Copy dependdency files
 COPY package*.json ./
 
-# Install project dependencies
-RUN npm install
+# Install packages
+RUN npm ci
 
-# Copy the "public" and "src" directories and other necessary files
-COPY  /public  /public
-COPY src/ src/
-COPY .env ./
+# Copy code
+COPY . .
 
-# Build the project
-ARG REACT_APP_MOVIE_API_URL
-RUN ls -al /app/public/
-
+# Build the app
 RUN npm run build
+
+# Expose the port used by the React app
+EXPOSE 3000
+
+# Start the React app when the container starts
+CMD ["npm", "run", "serve"]

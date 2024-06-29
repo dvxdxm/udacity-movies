@@ -1,60 +1,81 @@
-name: Frontend Continuous Deployment
-
+name: 'Frontend CD run after Backend CD success'
 on:
-  push:
-    branches:
-      - main
+
+  workflow_run:
+    workflows: ["Backend CD"]
+    types:
+      - completed
 
 jobs:
-  deploy:
+  build:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - name: checkout code
+        uses: actions/checkout@v3
 
-      - name: Setup NodeJS
-        uses: actions/setup-node@v2
+      - name: Setup nodejs
+        uses: actions/setup-node@v3
         with:
-          node-version: 14
+          node-version: 18
 
-      - name: Restore Cache
-        uses: actions/cache@v2
+      - name: Restore dependencies
+        id: cache
+        uses: actions/cache@v3
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
+          key: deps-node-modules-${{ hashFiles('**/package-lock.json') }}
 
       - name: Install dependencies
-        run: npm install 
-      - name: Run lint
-        run: npm run lint
-        continue-on-error: true # Continue running even if there are linting errors
-        
-      - name: Run tests
-        run: npm run test
+        run: cd ./starter/frontend && npm install
 
+      - name: Install prettier
+        run: |
+          cd ./starter/frontend 
+          npm install prettier@2.8.8 --save-dev
+
+      - name: Run lint check
+        run: cd ./starter/frontend && npm run lint
+
+      - name: Run test
+        run: cd ./starter/frontend && npm run test
+      
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-      
-      - name: Login to Amazon ECR
+          aws-region: ${{ vars.AWS_DEFAULT_REGION }}
+
+      - name: ECR Login
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          region: ${{ vars.AWS_DEFAULT_REGION }}
+
+      - name: Build Docker image
         run: |
-          aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com
+          cd ./starter/frontend
+          docker build -t frontend --build-arg=REACT_APP_MOVIE_API_URL=${{ vars.REACT_APP_MOVIE_API_URL }} .
       
-      
-      - name: Build application with Docker
+      - name: Tag Docker Image
         run: |
-          docker build --build-arg REACT_APP_MOVIE_API_URL=${{ secrets.REACT_APP_MOVIE_API_URL }} -t frontend .
-          docker tag frontend:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/frontend:latest
-          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/frontend:latest
-      
-      - name: Deploy to EKS Cluster
+          cd ./starter/frontend
+          docker tag frontend:latest ${{ vars.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/frontend:${GITHUB_SHA::7}
+
+      - name: Push Docker image to ECR
         run: |
-          kubectl apply -f deployment.yml
-        env:
-          KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
+          cd ./starter/frontend
+          docker push ${{ vars.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/frontend:${GITHUB_SHA::7}
+      
+      - name: Kubeconfig Login
+        run: |
+          aws eks update-kubeconfig --name cluster --region ${{ vars.AWS_DEFAULT_REGION }}
+      
+      - name: Deploy to Kubernetes
+        run: |
+          cd ./starter/frontend/k8s
+          kustomize edit set image frontend=${{ vars.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/frontend:${GITHUB_SHA::7}
+          kustomize build | kubectl apply -f -
