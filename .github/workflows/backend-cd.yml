@@ -1,17 +1,16 @@
 name: 'Backend CD'
 on:
-
   push:
     branches:
       - main
-
   workflow_dispatch:
 
 jobs:
-  build:
+  lint_and_test:
     runs-on: ubuntu-latest
+
     steps:
-      - name: checkout code
+      - name: Checkout code
         uses: actions/checkout@v3
 
       - name: Set up Python
@@ -24,7 +23,7 @@ jobs:
         with:
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          
+
       - name: Install dependencies
         run: |
           cd ./starter/backend
@@ -32,15 +31,43 @@ jobs:
           pip install pipenv
           pipenv install pytest --dev
           pipenv install --dev
-      
+
       - name: Run lint check
         run: cd ./starter/backend && pipenv run lint
-      
+
       - name: Run tests
         run: |
           cd ./starter/backend 
           pipenv run test
-      
+
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    needs: lint_and_test
+    if: ${{ success() }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.11'
+
+      - name: Restore cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Install dependencies
+        run: |
+          cd ./starter/backend
+          python -m pip install --upgrade pip
+          pip install pipenv
+          pipenv install pytest --dev
+          pipenv install --dev
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -59,7 +86,7 @@ jobs:
         run: |
           cd ./starter/backend
           docker build -t backend .
-      
+
       - name: Tag Docker Image
         run: |
           cd ./starter/backend
@@ -69,7 +96,7 @@ jobs:
         run: |
           cd ./starter/backend
           docker push ${{ vars.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/backend:${GITHUB_SHA::7}
-      
+
       - name: Kubeconfig Login
         run: |
           aws eks update-kubeconfig --name cluster --region ${{ vars.AWS_DEFAULT_REGION }}
