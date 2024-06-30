@@ -1,27 +1,24 @@
 name: 'Frontend CD'
 on:
-
-  workflow_run:
-    workflows: ["Backend CD"]
-    types:
-      - completed
+  push:
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
-  build:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+  lint_and_test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: checkout code
+      - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Setup nodejs
+      - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 18
 
       - name: Restore dependencies
-        id: cache
         uses: actions/cache@v3
         with:
           path: ~/.npm
@@ -38,9 +35,32 @@ jobs:
       - name: Run lint check
         run: cd ./starter/frontend && npm run lint
 
-      - name: Run test
+      - name: Run tests
         run: cd ./starter/frontend && npm run test
-      
+
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    needs: lint_and_test
+    if: ${{ success() }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Restore dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: deps-node-modules-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Install dependencies
+        run: cd ./starter/frontend && npm install
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -59,7 +79,7 @@ jobs:
         run: |
           cd ./starter/frontend
           docker build -t frontend --build-arg=REACT_APP_MOVIE_API_URL=${{ vars.REACT_APP_MOVIE_API_URL }} .
-      
+
       - name: Tag Docker Image
         run: |
           cd ./starter/frontend
@@ -69,11 +89,11 @@ jobs:
         run: |
           cd ./starter/frontend
           docker push ${{ vars.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/frontend:${GITHUB_SHA::7}
-      
+
       - name: Kubeconfig Login
         run: |
           aws eks update-kubeconfig --name cluster --region ${{ vars.AWS_DEFAULT_REGION }}
-      
+
       - name: Deploy to Kubernetes
         run: |
           cd ./starter/frontend/k8s
