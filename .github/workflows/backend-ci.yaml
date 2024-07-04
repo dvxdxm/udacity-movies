@@ -65,3 +65,17 @@ jobs:
         run: |
           cd starter/backend
           pipenv run test
+
+  build:
+    needs: [linting, test]
+    runs-on: ubuntu-latest
+        
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v3
+
+      - name: Build the Docker image
+        run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+        
+      - name: Run the Docker container
+        run: docker run --rm my-image-name:$(date +%s)
