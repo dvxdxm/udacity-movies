@@ -29,3 +29,7 @@ jobs:
           cd starter/backend
           python -m pip install --upgrade pipenv wheel
 
+      - name: Install dependencies
+        run: |
+          pipenv install --deploy --dev
+
