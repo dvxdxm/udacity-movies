@@ -77,9 +77,10 @@ jobs:
       - name: Build the Docker image
         run: |
           cd starter/backend
-          docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+          docker build . --file ./starter/backend/Dockerfile --tag my-image-name:$(date +%s)
         
       - name: Run the Docker container
         run: |
           cd starter/backend
+          ls
           docker run --rm my-image-name:$(date +%s)
