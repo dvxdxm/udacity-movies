@@ -34,3 +34,7 @@ jobs:
           cd starter/backend
           pipenv install
 
+      - name: Run linting
+        run: |
+          cd starter/backend
+          pipenv run lint
