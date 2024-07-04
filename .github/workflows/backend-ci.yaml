@@ -1,0 +1,29 @@
+name: Backend Continuous Integration
+
+on:
+  pull_request:
+    branches:
+      - master
+
+  push:
+    branches:
+      - master
+
+  workflow_dispatch:
+
+jobs:
+  linting:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v3
+
+      - name: Use PyPy latest
+        uses: actions/setup-python@v5 
+        with:
+          python-version: 'pypy3.9'
+      - run: |
+          cd starter/backend
+          python Pipfile
+
