@@ -93,6 +93,9 @@ jobs:
           aws-session-token: ${{secrets.AWS_SESSION_TOKEN}}
           aws-region: us-east-1
 
+      - name: Navigate to directory
+        run: cd setup/terraform
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
 
