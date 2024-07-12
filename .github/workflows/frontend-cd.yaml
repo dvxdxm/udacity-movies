@@ -96,31 +96,34 @@ jobs:
       - name: Check out repo
         uses: actions/checkout@v3
 
-      - name: Navigate to directory
-        run: cd setup/terraform
-
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
 
       - name: Terraform Initialize
         run: |
-          ls
+          cd setup/terraform
           terraform init
 
       - name: Terraform Validate
-        run: terraform validate
+        run: |
+          cd setup/terraform
+          terraform validate
 
       - name: Terraform Plan
         run: |
-          ls
+          cd setup/terraform
           terraform plan
         continue-on-error: true
 
       - name: Terraform Apply
-        run: terraform apply -auto-approve
+        run: |
+          cd setup/terraform
+          terraform apply -auto-approve
 
       - name: Terraform Destroy
-        run: terraform plan -destroy
+        run: |
+          cd setup/terraform
+          terraform plan -destroy
 
     # - name: Login to Amazon ECR
     #   id: login-ecr
