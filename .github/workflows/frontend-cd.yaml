@@ -94,7 +94,10 @@ jobs:
           aws-region: us-east-1
 
       - name: Navigate to directory
-        run: cd setup/terraform
+        run: |
+          ls
+          cd setup
+          cd terraform
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
