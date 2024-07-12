@@ -93,11 +93,11 @@ jobs:
           aws-session-token: ${{secrets.AWS_SESSION_TOKEN}}
           aws-region: us-east-1
 
+      - name: Check out repo
+        uses: actions/checkout@v3
+
       - name: Navigate to directory
-        run: |
-          ls
-          cd setup
-          cd terraform
+        run: cd setup/terraform
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
