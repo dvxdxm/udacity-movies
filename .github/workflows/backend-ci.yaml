@@ -79,8 +79,8 @@ jobs:
           cd starter/backend
           docker build . --file Dockerfile --tag backend-build-image
         
-      - name: Run the Docker container
-        run: |
-          cd starter/backend
-          ls
-          docker run --rm backend-build-image
+      # - name: Run the Docker container
+      #   run: |
+      #     cd starter/backend
+      #     ls
+      #     docker run --rm backend-build-image
