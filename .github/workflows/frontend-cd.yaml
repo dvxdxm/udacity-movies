@@ -100,6 +100,6 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
         run: |
           cd starter/frontend
-          docker build -t $REGISTRY/%REPOSITORY:$IMAGE_TAG .
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
           
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
