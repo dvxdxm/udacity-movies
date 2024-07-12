@@ -103,13 +103,17 @@ jobs:
         uses: hashicorp/setup-terraform@v2
 
       - name: Terraform Initialize
-        run: terraform init
+        run: |
+          ls
+          terraform init
 
       - name: Terraform Validate
         run: terraform validate
 
       - name: Terraform Plan
-        run: terraform plan
+        run: |
+          ls
+          terraform plan
         continue-on-error: true
 
       - name: Terraform Apply
