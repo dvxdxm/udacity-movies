@@ -104,8 +104,24 @@ jobs:
           
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
 
+      - name: Set up Kubeconfig
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+          role-to-assume: <aws_role_arn>
+          role-session-name: GitHubActions
+          role-duration-seconds: 1200
+          mask-aws-account-id: false
+          save-to-file: true
+
       - name: Install kubectl
         run: |
           curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
           chmod +x ./kubectl
           sudo mv ./kubectl /usr/local/bin/kubectl
+
+      - name: Deploy to EKS
+        run: |
+          kubectl apply -f deployment.yaml
