@@ -4,7 +4,7 @@ inputs:
   python-version:
     description: 'Python version'
     required: true
-    default: 3.10
+    default: 3.10.14
   job-command:
     description: 'command in Pipfile to execute the specific job'
     required: true

@@ -26,7 +26,7 @@ jobs:
       - name: Python setup and command execution
         uses: ./.github/actions/python-setup-and-execution
         with:
-          python-version: 3.10
+          python-version: 3.10.14
           job-command: 'lint'
 
   test:
