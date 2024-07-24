@@ -1,5 +1,5 @@
-name: 'node-ci-setup'
-description: 'Setup Node.js, cache and install dependencies'
+name: 'node-setup-and-execution'
+description: 'Setup Node.js, cache and install dependencies and run command'
 inputs:
   node-version:
     description: 'Node.js version'
@@ -38,6 +38,7 @@ runs:
         npm ci
       shell: bash
 
+    # run specific job specified in package.json
     - name: run specific job
       run: |
         cd ${{ inputs.path-to-workdir }}
