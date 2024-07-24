@@ -1,5 +1,5 @@
 name: 'node-ci-setup'
-description: 'Checkout, setup Node.js, cache and install dependencies'
+description: 'Setup Node.js, cache and install dependencies'
 inputs:
   node-version:
     description: 'Node.js version'
@@ -11,11 +11,13 @@ inputs:
 runs:
   using: 'composite'
   steps:
+    # setup node.js
     - name: Setup Node.js
       uses: actions/setup-node@v2
       with:
         node-version: ${{ inputs.node-version }}
 
+    # cache node modules before install
     - name: Cache node modules
       uses: actions/cache@v2
       with:
@@ -26,6 +28,7 @@ runs:
           ${{ runner.os }}-node-
           ${{ runner.os }}-
 
+    # install dependencies in the directory defined by input parameter
     - name: Install Dependencies
       run: |
         cd ${{ inputs.path-to-workdir }}

@@ -19,14 +19,69 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # checkout repository first
       - name: Checkout repository
         uses: actions/checkout@v2
-      
-      - name: List contents of the actions directory
-        run: ls -R ./.github/actions/
 
+     # for debugging purpose
+      # - name: List contents of the actions directory
+      #   run: ls -R ./.github/actions/
+
+      # use my customized action to setup node
       - name: Node.js setup
         uses: ./.github/actions/node-ci-setup
         with:
           node-version: lts/*
           path-to-workdir: 'starter/frontend'
+
+      # do the linting
+      - name: run linter
+        run: |
+          cd starter/frontend
+          npm run lint
+  
+  # test job
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v3
+
+      - name: Use Node.js latest
+        uses: actions/setup-node@v3
+        with:
+          node-version: latest
+
+      - name: Install dependencies
+        run: |
+          cd starter/frontend
+          npm ci
+
+      - name: run test
+        run: |
+          cd starter/frontend
+          npm run test
+
+  build:
+    needs: [linting, test]
+    runs-on: ubuntu-latest
+        
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v3
+
+      - name: Use Node.js latest
+        uses: actions/setup-node@v3
+        with:
+          node-version: latest
+
+      - name: Install dependencies
+        run: |
+          cd starter/frontend
+          npm ci
+
+      - name: run build
+        run: |
+          cd starter/frontend
+          npm run build
