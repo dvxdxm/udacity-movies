@@ -1,0 +1,102 @@
+name: Frontend Continuous Integration
+
+on:
+  # trigger on every pull request against main
+  pull_request:
+    branches:
+      - main
+
+  # just for testing purpose
+  push:
+    branches:
+      - main
+
+  # the pipeline can be run manually
+  workflow_dispatch:
+
+jobs:
+  linting:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: List contents of the actions directory
+        run: ls -R ./.github/actions/
+      # - name: Check out repo 
+      #   uses: actions/checkout@v3
+      - name: Node.js setup
+        uses: ./.github/actions/node-ci-setup
+        # with:
+        #   node-version: 'latest'
+
+      # - name: Use Node.js latest
+      #   uses: actions/setup-node@v3
+      #   with:
+      #     node-version: latest
+
+      # - name: Cache node modules
+      #   uses: actions/cache@v2
+      #   env:
+      #     cache-name: cache-node-modules
+      #   with:
+      #     # This path is where the dependencies are cached
+      #     path: ~/.npm
+      #     key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-build-${{ env.cache-name }}-
+      #       ${{ runner.os }}-build-
+      #       ${{ runner.os }}-
+
+      # - name: Install dependencies
+      #   run: |
+      #     cd starter/frontend
+      #     npm ci
+
+      - name: run linter
+        run: |
+          cd starter/frontend
+          npm run lint
+
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v3
+
+      - name: Use Node.js latest
+        uses: actions/setup-node@v3
+        with:
+          node-version: latest
+
+      - name: Install dependencies
+        run: |
+          cd starter/frontend
+          npm ci
+
+      - name: run test
+        run: |
+          cd starter/frontend
+          npm run test
+
+  build:
+    needs: [linting, test]
+    runs-on: ubuntu-latest
+        
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v3
+
+      - name: Use Node.js latest
+        uses: actions/setup-node@v3
+        with:
+          node-version: latest
+
+      - name: Install dependencies
+        run: |
+          cd starter/frontend
+          npm ci
+
+      - name: run build
+        run: |
+          cd starter/frontend
+          npm run build
