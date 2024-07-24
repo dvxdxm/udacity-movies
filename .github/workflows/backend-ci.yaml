@@ -1,14 +1,17 @@
 name: Backend Continuous Integration
 
 on:
-  # pull_request:
-  #   branches:
-  #     - main
+  # trigger on every pull request against main
+  pull_request:
+    branches:
+      - main
 
-  # push:
-  #   branches:
-  #     - main
+  # just for testing purpose
+  push:
+    branches:
+      - main
 
+  # the pipeline can be run manually
   workflow_dispatch:
 
 jobs:
@@ -19,25 +22,12 @@ jobs:
       - name: Check out repo
         uses: actions/checkout@v3
 
-      - name: Setup Python latest
-        uses: actions/setup-python@v5 
+      # use my customized action to setup python and dependencies and run command
+      - name: Python setup and command execution
+        uses: ./.github/actions/python-setup-and-execution
         with:
-          python-version: '3.10'
-
-      - name: Install pipenv
-        run: |
-          cd starter/backend
-          python -m pip install --upgrade pipenv
-
-      - name: Install dependencies
-        run: |
-          cd starter/backend
-          pipenv install --dev
-
-      - name: Run linting
-        run: |
-          cd starter/backend
-          pipenv run lint
+          python-version: 3.10
+          job-command: 'lint'
 
   test:
     runs-on: ubuntu-latest

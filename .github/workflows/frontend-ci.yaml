@@ -7,9 +7,9 @@ on:
       - main
 
   # just for testing purpose
-  push:
-    branches:
-      - main
+  # push:
+  #   branches:
+  #     - main
 
   # the pipeline can be run manually
   workflow_dispatch:
@@ -51,6 +51,7 @@ jobs:
           path-to-workdir: 'starter/frontend'
           job-command: 'test'
 
+  # build job
   build:
     needs: [linting, test]
     runs-on: ubuntu-latest

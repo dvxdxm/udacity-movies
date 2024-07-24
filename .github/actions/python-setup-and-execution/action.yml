@@ -1,0 +1,39 @@
+name: 'python-setup-and-execution'
+description: 'Setup Python, cache and install dependencies and run command in pipenv'
+inputs:
+  python-version:
+    description: 'Python version'
+    required: true
+    default: 3.10
+  job-command:
+    description: 'command in Pipfile to execute the specific job'
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    # setup python
+    - name: Setup Python latest
+      uses: actions/setup-python@v5 
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    # install pip environment
+    - name: Install pipenv
+      run: |
+        cd starter/backend
+        python -m pip install --upgrade pipenv
+      shell: bash
+
+    # install dependencies
+    - name: Install dependencies
+      run: |
+        cd starter/backend
+        pipenv install --dev
+      shell: bash
+
+    # run specific job specified by Pipfile
+    - name: Run linting
+      run: |
+        cd starter/backend
+        pipenv run ${{ inputs.job-command }}
+      shell: bash
