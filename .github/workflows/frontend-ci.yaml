@@ -20,7 +20,7 @@ jobs:
 
     steps:
       - name: Node.js setup
-        uses: christian-braunagel/Movie-Picture-Pipeline@main
+        uses: christian-braunagel/Movie-Picture-Pipeline/node-ci-setup@main
         with:
           node-version: latest
       # - name: Check out repo
