@@ -48,15 +48,12 @@ jobs:
       - name: Check out repo
         uses: actions/checkout@v3
 
-      - name: Use Node.js latest
-        uses: actions/setup-node@v3
+      # use my customized action to setup node
+      - name: Node.js setup
+        uses: ./.github/actions/node-ci-setup
         with:
-          node-version: latest
-
-      - name: Install dependencies
-        run: |
-          cd starter/frontend
-          npm ci
+          node-version: lts/*
+          path-to-workdir: 'starter/frontend'
 
       - name: run test
         run: |
