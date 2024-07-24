@@ -42,3 +42,4 @@ runs:
       run: |
         cd ${{ inputs.path-to-workdir }}
         npm run ${{ inputs.job-command }}
+      shell: bash
