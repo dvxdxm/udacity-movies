@@ -8,9 +8,6 @@ description: 'Checkout, setup Node.js, cache and install dependencies'
 runs:
   using: 'composite'
   steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-
     - name: Setup Node.js
       uses: actions/setup-node@v2
       with:
