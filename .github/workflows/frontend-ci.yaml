@@ -23,7 +23,7 @@ jobs:
         uses: ./.github/actions/node-ci-setup@main
         with:
           node-version: latest
-      # - name: Check out repo
+      # - name: Check out repo 
       #   uses: actions/checkout@v3
 
       # - name: Use Node.js latest
