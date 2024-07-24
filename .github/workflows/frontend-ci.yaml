@@ -27,5 +27,5 @@ jobs:
 
       - name: Node.js setup
         uses: ./.github/actions/node-ci-setup
-        # with:
-        #   node-version: 'latest'
+        with:
+          node-version: latest
