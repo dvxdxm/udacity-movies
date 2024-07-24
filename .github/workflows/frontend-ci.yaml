@@ -19,10 +19,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out repo 
-        uses: actions/checkout@v3
+      # - name: Check out repo 
+      #   uses: actions/checkout@v3
       - name: Node.js setup
-        uses: ./.github/actions/node-ci-setup@main
+        uses: ./.github/actions@main
         with:
           node-version: latest
 
