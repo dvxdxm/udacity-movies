@@ -19,31 +19,35 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out repo
-        uses: actions/checkout@v3
-
-      - name: Use Node.js latest
-        uses: actions/setup-node@v3
+      - name: Node.js setup
+        uses: christian-braunagel/Movie-Picture-Pipeline
         with:
           node-version: latest
+      # - name: Check out repo
+      #   uses: actions/checkout@v3
 
-      - name: Cache node modules
-        uses: actions/cache@v2
-        env:
-          cache-name: cache-node-modules
-        with:
-          # This path is where the dependencies are cached
-          path: ~/.npm
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
+      # - name: Use Node.js latest
+      #   uses: actions/setup-node@v3
+      #   with:
+      #     node-version: latest
 
-      - name: Install dependencies
-        run: |
-          cd starter/frontend
-          npm ci
+      # - name: Cache node modules
+      #   uses: actions/cache@v2
+      #   env:
+      #     cache-name: cache-node-modules
+      #   with:
+      #     # This path is where the dependencies are cached
+      #     path: ~/.npm
+      #     key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-build-${{ env.cache-name }}-
+      #       ${{ runner.os }}-build-
+      #       ${{ runner.os }}-
+
+      # - name: Install dependencies
+      #   run: |
+      #     cd starter/frontend
+      #     npm ci
 
       - name: run linter
         run: |

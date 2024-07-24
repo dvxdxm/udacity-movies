@@ -1,0 +1,30 @@
+name: 'Node.js CI Setup'
+description: 'Checkout, setup Node.js, cache and install dependencies'
+inputs:
+  node-version:
+    description: 'Node.js version'
+    required: true
+    default: '14'
+runs:
+  using: 'composite'
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: ${{ inputs.node-version }}
+
+    - name: Cache node modules
+      uses: actions/cache@v2
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-node-${{ inputs.node-version }}-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-${{ inputs.node-version }}-
+          ${{ runner.os }}-node-
+          ${{ runner.os }}-
+
+    - name: Install Dependencies
+      run: npm ci
