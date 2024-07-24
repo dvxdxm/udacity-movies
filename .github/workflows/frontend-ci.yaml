@@ -29,3 +29,4 @@ jobs:
         uses: ./.github/actions/node-ci-setup
         with:
           node-version: lts/*
+          path-to-workdir: 'starter/frontend'

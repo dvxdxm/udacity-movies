@@ -5,6 +5,9 @@ inputs:
     description: 'Node.js version'
     required: true
     default: lts/*
+  path-to-workdir:
+    description: 'directory where package.json is located'
+    required: true
 runs:
   using: 'composite'
   steps:
@@ -24,5 +27,7 @@ runs:
           ${{ runner.os }}-
 
     - name: Install Dependencies
-      run: npm ci
+      run: |
+        cd ${{ inputs.path-to-workdir }}
+        npm ci
       shell: bash
