@@ -49,4 +49,4 @@ jobs:
       - name: Terraform Destroy
         run: |
           cd setup/terraform
-          terraform destroy -auto-aaprove ./setup/terraform
+          terraform destroy -auto-approve
