@@ -31,27 +31,21 @@ jobs:
           path-to-workdir: 'starter/frontend'
           job-command: 'lint'
 
-  # test:
-  #   runs-on: ubuntu-latest
+  # do the testing
+  test:
+    runs-on: ubuntu-latest
 
-  #   steps:
-  #     - name: Check out repo
-  #       uses: actions/checkout@v3
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v3
 
-  #     - name: Use Node.js latest
-  #       uses: actions/setup-node@v3
-  #       with:
-  #         node-version: latest
-
-  #     - name: Install dependencies
-  #       run: |
-  #         cd starter/frontend
-  #         npm ci
-
-  #     - name: run test
-  #       run: |
-  #         cd starter/frontend
-  #         npm run test
+      # use my customized action to setup node and dependencies and run command
+      - name: Node.js setup
+        uses: ./.github/actions/node-setup-and-execution
+        with:
+          node-version: lts/*
+          path-to-workdir: 'starter/frontend'
+          job-command: 'test'
 
   # build:
   #   needs: [linting, test]
