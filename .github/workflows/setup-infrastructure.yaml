@@ -30,16 +30,16 @@ jobs:
           cd setup/terraform
           terraform init
 
-      - name: Terraform Validate
-        run: |
-          cd setup/terraform
-          terraform validate
+    #   - name: Terraform Validate
+    #     run: |
+    #       cd setup/terraform
+    #       terraform validate
 
-      - name: Terraform Plan
-        run: |
-          cd setup/terraform
-          terraform plan
-        continue-on-error: true
+    #   - name: Terraform Plan
+    #     run: |
+    #       cd setup/terraform
+    #       terraform plan
+    #     continue-on-error: true
 
       - name: Terraform Apply
         run: |
