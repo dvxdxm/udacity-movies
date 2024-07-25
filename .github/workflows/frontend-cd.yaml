@@ -47,30 +47,55 @@ jobs:
           path-to-workdir: 'starter/frontend'
           job-command: 'test'
 
-  # build:
-  #   needs: [linting, test]
-  #   runs-on: ubuntu-latest
+  # build the docker image
+  build:
+    needs: [linting, test]
+    runs-on: ubuntu-latest
         
-  #   steps:
-  #     - name: Check out repo
-  #       uses: actions/checkout@v3
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v3
 
-  #     - name: Use Node.js latest
-  #       uses: actions/setup-node@v3
-  #       with:
-  #         node-version: latest
+      # setup docker buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
 
-  #     - name: Install dependencies
-  #       run: |
-  #         cd starter/frontend
-  #         npm ci
+      # cache docker layers
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
 
-  #     - name: run build
-  #       env:
-  #         REACT_APP_MOVIE_API_URL: test
-  #       run: |
-  #         cd starter/frontend
-  #         npm run build
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: ./starter/frontend
+          file: ./starter/frontend/Dockerfile
+          build-args: REACT_APP_MOVIE_API_URL=${{ secrets.REACT_APP_MOVIE_API_URL }}
+          # Load the Docker cache
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new
+
+      # - name: Use Node.js latest
+      #   uses: actions/setup-node@v3
+      #   with:
+      #     node-version: latest
+
+      # - name: Install dependencies
+      #   run: |
+      #     cd starter/frontend
+      #     npm ci
+
+      # - name: run build
+      #   run: |
+      #     cd starter/frontend
+      #     npm run build
+
+        # env:
+        #   REACT_APP_MOVIE_API_URL: test
 
   terraform:
     runs-on: ubuntu-latest
