@@ -50,7 +50,7 @@ jobs:
 
   # build the docker image
   build:
-    needs: [linting, test, IaaS]
+    needs: [linting, test]
     runs-on: ubuntu-latest
         
     steps:
