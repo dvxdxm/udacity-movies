@@ -94,7 +94,6 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-#          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: us-east-1
 
       - name: Build, Tag, and push docker image to Amazon ECR
@@ -103,10 +102,9 @@ jobs:
           REPOSITORY: frontend
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          ls
           cd starter/frontend
+          echo ${{ steps.login-ecr.outputs.registry }}
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
-          
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
 
       # - name: Set up Kubeconfig
