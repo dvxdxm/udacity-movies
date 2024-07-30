@@ -113,37 +113,42 @@ jobs:
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
 
   DeployToKubernetes:
-    needs: [build]
+    #needs: [build]
+    needs: [linting, test]
     runs-on: ubuntu-latest
     
     steps:
+    - name: Check out repo
+      uses: actions/checkout@v3
 
-    - name: Set up Kubeconfig
-      uses: aws-actions/configure-aws-credentials@v1
+    # set aws configuration
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4 # More information on this action can be found below in the 'AWS Credentials' section
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-1
-        role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-        role-session-name: GitHubActions
-        role-duration-seconds: 1200
-        mask-aws-account-id: false
-        save-to-file: true
 
-      # - name: Install kubectl
-      #   run: |
-      #     curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-      #     chmod +x ./kubectl
-      #     sudo mv ./kubectl /usr/local/bin/kubectl
+    # login to aws ECR
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v2
 
-      # - name: Set up Kubeconfig
-      #   env:
-      #     KUBECONFIG_CONTENTS: ${{ secrets.KUBECONFIG_CONTENTS }} # This is the kubeconfig file content as a GitHub secret
-      #   run: |
-      #     echo "$KUBECONFIG_CONTENTS" | base64 -d > $HOME/.kube/config
-      #     kubectl version # This is just to test the configuration
+    - name: Install kubectl
+      run: |
+        curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+        chmod +x ./kubectl
+        sudo mv ./kubectl /usr/local/bin/kubectl
 
-      # - name: Deploy to EKS
-      #   run: |
-      #     cd starter/frontend/k8s
-      #     kubectl apply -f deployment.yaml
+    - name: Deploy to EKS
+      env:
+        KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REPOSITORY: frontend
+        IMAGE_TAG:  ${{ github.sha }} 
+      run: |
+        echo "$KUBE_CONFIG_DATA" | base64 -d > $HOME/.kube/config
+        kubectl get deployments # List all deployments, can be removed
+        IMAGE_URI="$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+        kubectl set image deployment/cluster my-container=$IMAGE_URI --record
+        kubectl rollout status deployment/my-deployment
