@@ -81,7 +81,7 @@ jobs:
           cache-to: type=local,dest=/tmp/.buildx-cache-new
 
   
-  awsECRlogin:
+  ECRBuildAndPush:
     needs: [linting, test]
     runs-on: ubuntu-latest
 
@@ -89,13 +89,15 @@ jobs:
       - name: Check out repo
         uses: actions/checkout@v3
 
+        # set aws configuration
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4 # More information on this action can be found below in the 'AWS Credentials' section
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
-          
+
+      # login to aws ECR
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
@@ -107,21 +109,26 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
         run: |
           cd starter/frontend
-          echo ${{ steps.login-ecr.outputs.registry }}
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
 
-      # - name: Set up Kubeconfig
-      #   uses: aws-actions/configure-aws-credentials@v1
-      #   with:
-      #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      #     aws-region: us-east-1
-      #     role-to-assume: arn:aws:iam::280529436201:role/udacity_eks
-      #     role-session-name: GitHubActions
-      #     role-duration-seconds: 1200
-      #     mask-aws-account-id: false
-      #     save-to-file: true
+  DeployToKubernetes:
+    needs: [build]
+    runs-on: ubuntu-latest
+    
+    steps:
+
+    - name: Set up Kubeconfig
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+        role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+        role-session-name: GitHubActions
+        role-duration-seconds: 1200
+        mask-aws-account-id: false
+        save-to-file: true
 
       # - name: Install kubectl
       #   run: |
