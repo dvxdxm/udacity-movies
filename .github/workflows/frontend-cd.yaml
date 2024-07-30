@@ -114,7 +114,7 @@ jobs:
 
   DeployToKubernetes:
     #needs: [build]
-    needs: [linting, test]
+    needs: [ECRBuildAndPush]
     runs-on: ubuntu-latest
     
     steps:
@@ -147,8 +147,10 @@ jobs:
         ECR_REPOSITORY: frontend
         IMAGE_TAG:  ${{ github.sha }} 
       run: |
+        mkdir -p $HOME/.kube
         echo "$KUBE_CONFIG_DATA" | base64 -d > $HOME/.kube/config
         kubectl get deployments # List all deployments, can be removed
         IMAGE_URI="$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+        echo $IMAGE_URI
         kubectl set image deployment/cluster my-container=$IMAGE_URI --record
         kubectl rollout status deployment/my-deployment
