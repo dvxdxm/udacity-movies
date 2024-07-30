@@ -77,7 +77,7 @@ jobs:
 
   # build the image and deploy it to ECR and EKS
   deploy:
-    needs: [linting, test]
+    needs: [build]
     runs-on: ubuntu-latest
 
     steps:
