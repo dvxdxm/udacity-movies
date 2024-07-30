@@ -7,9 +7,9 @@ on:
       - main
 
   # just for testing purpose
-  push:
-    branches:
-      - main
+  # push:
+  #   branches:
+  #     - main
 
   # the pipeline can be run manually
   workflow_dispatch:
@@ -80,7 +80,7 @@ jobs:
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new
 
-  
+  # build the image and deploy it to ECR and EKS
   deploy:
     needs: [linting, test]
     runs-on: ubuntu-latest
@@ -102,6 +102,7 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
+      # build and upload image to ECR
       - name: Build, Tag, and push docker image to Amazon ECR
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
@@ -119,15 +120,18 @@ jobs:
           chmod +x ./kubectl
           sudo mv ./kubectl /usr/local/bin/kubectl
 
+      # update cluster with config in .kube
       - name: Update kubeconfig
         run: |
           aws eks --region us-east-1 update-kubeconfig --name cluster
 
+      # use kustomization.yaml
       - name: Deploy to EKS using Kustomize
         run: |
           cd starter/frontend/k8s
           kubectl apply -k .
 
+      # set image
       - name: Set image in Kubernetes deployment
         run: |
           cd starter/frontend/k8s
@@ -138,11 +142,13 @@ jobs:
           cd starter/frontend/k8s
           kubectl rollout status deployment/frontend
 
+      # for debugging purpose
       - name: Get Deployment Events
         if: failure() # Only run this step if the previous step failed
         run: |
           kubectl describe deployment frontend
 
+      # for debugging purpose
       - name: Get Pod Logs
         if: failure() # Only run this step if the previous step failed
         run: |

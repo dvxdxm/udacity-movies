@@ -1,13 +1,13 @@
 name: Backend Continuous Deployment
 
 on:
-  # pull_request:
-  #   branches:
-  #     - main
+  pull_request:
+    branches:
+      - main
 
-  # push:
-  #   branches:
-  #     - main
+  push:
+    branches:
+      - main
 
   workflow_dispatch:
 
@@ -19,25 +19,32 @@ jobs:
       - name: Check out repo
         uses: actions/checkout@v3
 
-      - name: Setup Python latest
-        uses: actions/setup-python@v5 
+      # use my customized action to setup python and dependencies and run command
+      - name: Python setup and command execution
+        uses: ./.github/actions/python-setup-and-execution
         with:
-          python-version: '3.10'
+          python-version: 3.10.14
+          job-command: 'lint'
+      
+      # - name: Setup Python latest
+      #   uses: actions/setup-python@v5 
+      #   with:
+      #     python-version: '3.10'
 
-      - name: Install pipenv
-        run: |
-          cd starter/backend
-          python -m pip install --upgrade pipenv
+      # - name: Install pipenv
+      #   run: |
+      #     cd starter/backend
+      #     python -m pip install --upgrade pipenv
 
-      - name: Install dependencies
-        run: |
-          cd starter/backend
-          pipenv install --dev
+      # - name: Install dependencies
+      #   run: |
+      #     cd starter/backend
+      #     pipenv install --dev
 
-      - name: Run linting
-        run: |
-          cd starter/backend
-          pipenv run lint
+      # - name: Run linting
+      #   run: |
+      #     cd starter/backend
+      #     pipenv run lint
 
   test:
     runs-on: ubuntu-latest
@@ -46,26 +53,53 @@ jobs:
       - name: Check out repo
         uses: actions/checkout@v3
 
-      - name: Setup Python latest
-        uses: actions/setup-python@v5 
+      # use my customized action to setup python and dependencies and run command
+      - name: Python setup and command execution
+        uses: ./.github/actions/python-setup-and-execution
         with:
-          python-version: '3.10'
+          python-version: 3.10.14
+          job-command: 'test'
 
-      - name: Install pipenv
-        run: |
-          cd starter/backend
-          python -m pip install --upgrade pipenv
+      # - name: Setup Python latest
+      #   uses: actions/setup-python@v5 
+      #   with:
+      #     python-version: '3.10'
 
-      - name: Install dependencies
-        run: |
-          cd starter/backend
-          pipenv install --dev
+      # - name: Install pipenv
+      #   run: |
+      #     cd starter/backend
+      #     python -m pip install --upgrade pipenv
 
-      - name: Run test
-        run: |
-          cd starter/backend
-          pipenv run test
+      # - name: Install dependencies
+      #   run: |
+      #     cd starter/backend
+      #     pipenv install --dev
 
+      # - name: Run test
+      #   run: |
+      #     cd starter/backend
+      #     pipenv run test
+
+  # build:
+  #   needs: [linting, test]
+  #   runs-on: ubuntu-latest
+        
+  #   steps:
+  #     - name: Check out repo
+  #       uses: actions/checkout@v3
+
+  #     - name: Build the Docker image
+  #       run: |
+  #         cd starter/backend
+  #         docker build . --file Dockerfile --tag backend-build-image
+        
+  #     # - name: Run the Docker container
+  #     #   run: |
+  #     #     cd starter/backend
+  #     #     ls
+  #     #     docker run --rm backend-build-image
+
+  # build the docker image
   build:
     needs: [linting, test]
     runs-on: ubuntu-latest
@@ -74,13 +108,99 @@ jobs:
       - name: Check out repo
         uses: actions/checkout@v3
 
-      - name: Build the Docker image
+      # setup docker buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      # cache docker layers
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: ./starter/backend
+          file: ./starter/backend/Dockerfile
+          # Load the Docker cache
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new
+
+  # build the image and deploy it to ECR and EKS
+  deploy:
+    needs: [linting, test]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v3
+
+      # set aws configuration
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      # login to aws ECR
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # build and upload image to ECR
+      - name: Build, Tag, and push docker image to Amazon ECR
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: backend
+          IMAGE_TAG: ${{ github.sha }}
         run: |
           cd starter/backend
-          docker build . --file Dockerfile --tag backend-build-image
-        
-      # - name: Run the Docker container
-      #   run: |
-      #     cd starter/backend
-      #     ls
-      #     docker run --rm backend-build-image
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
+          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+          echo "IMAGE_URI=$REGISTRY/$REPOSITORY:$IMAGE_TAG" >> $GITHUB_ENV
+
+      - name: Install kubectl
+        run: |
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x ./kubectl
+          sudo mv ./kubectl /usr/local/bin/kubectl
+
+      # update cluster with config in .kube
+      - name: Update kubeconfig
+        run: |
+          aws eks --region us-east-1 update-kubeconfig --name cluster
+
+      # use kustomization.yaml
+      - name: Deploy to EKS using Kustomize
+        run: |
+          cd starter/backend/k8s
+          kubectl apply -k .
+
+      # set image
+      - name: Set image in Kubernetes deployment
+        run: |
+          cd starter/backend/k8s
+          kubectl set image deployment/backend backend=${{ env.IMAGE_URI }} --record
+
+      - name: Check rollout status
+        run: |
+          cd starter/backend/k8s
+          kubectl rollout status deployment/backend
+
+      # for debugging purpose
+      - name: Get Deployment Events
+        if: failure() # Only run this step if the previous step failed
+        run: |
+          kubectl describe deployment backend
+
+      # for debugging purpose
+      - name: Get Pod Logs
+        if: failure() # Only run this step if the previous step failed
+        run: |
+          kubectl get pods --selector=app=backend
+          kubectl logs -l app=backend --all-containers=true
