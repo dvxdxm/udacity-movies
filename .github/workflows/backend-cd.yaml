@@ -20,6 +20,13 @@ on:
   workflow_dispatch:
 
 jobs:
+  sleep:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: wait a little bit
+        run: sleep 10
+
   linting:
     runs-on: ubuntu-latest
 

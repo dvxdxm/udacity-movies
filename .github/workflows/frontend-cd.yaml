@@ -102,12 +102,19 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
+      - name: Get Backend Service URL
+        id: get-backend-url
+        run: |
+          BACKEND_URL=$(kubectl get svc backend -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+          echo "REACT_APP_MOVIE_API_URL=http://${BACKEND_URL}" >> $GITHUB_ENV
+
       # build and upload image to ECR
       - name: Build, Tag, and push docker image to Amazon ECR
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           REPOSITORY: frontend
           IMAGE_TAG: ${{ github.sha }}
+          build-args: REACT_APP_MOVIE_API_URL=${{ env.REACT_APP_MOVIE_API_URL }}
         run: |
           cd starter/frontend
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
