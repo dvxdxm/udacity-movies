@@ -121,22 +121,27 @@ jobs:
 
       - name: Update kubeconfig
         run: |
+          cd starter/frontend/k8s
           aws eks --region us-east-1 update-kubeconfig --name cluster
 
       - name: List all deployments
         run: |
+          cd starter/frontend/k8s
           kubectl get deployments --all-namespaces
 
       - name: Deploy to EKS using Kustomize
         run: |
+          cd starter/frontend/k8s
           kubectl apply -k .
 
       - name: Set image in Kubernetes deployment
         run: |
+          cd starter/frontend/k8s
           kubectl set image deployment/frontend frontend=${{ env.IMAGE_URI }} --record
 
       - name: Deploy to EKS
         run: |
+          cd starter/frontend/k8s
           kubectl apply -k .
           kubectl rollout status deployment/frontend
 
