@@ -123,6 +123,14 @@ jobs:
         run: |
           aws eks --region us-east-1 update-kubeconfig --name cluster
 
+      - name: List all deployments
+        run: |
+          kubectl get deployments --all-namespaces
+
+      - name: Deploy to EKS using Kustomize
+        run: |
+          kubectl apply -k .
+
       - name: Set image in Kubernetes deployment
         run: |
           kubectl set image deployment/frontend frontend=${{ env.IMAGE_URI }} --record
