@@ -1,10 +1,12 @@
 name: Backend Continuous Deployment
 
 on:
-  pull_request:
-    branches:
-      - main
+  # just for testing purpose
+  # pull_request:
+  #   branches:
+  #     - main
 
+  # trigger on every merge on main
   push:
     branches:
       - main
@@ -26,25 +28,6 @@ jobs:
           python-version: 3.10.14
           job-command: 'lint'
       
-      # - name: Setup Python latest
-      #   uses: actions/setup-python@v5 
-      #   with:
-      #     python-version: '3.10'
-
-      # - name: Install pipenv
-      #   run: |
-      #     cd starter/backend
-      #     python -m pip install --upgrade pipenv
-
-      # - name: Install dependencies
-      #   run: |
-      #     cd starter/backend
-      #     pipenv install --dev
-
-      # - name: Run linting
-      #   run: |
-      #     cd starter/backend
-      #     pipenv run lint
 
   test:
     runs-on: ubuntu-latest
@@ -60,44 +43,6 @@ jobs:
           python-version: 3.10.14
           job-command: 'test'
 
-      # - name: Setup Python latest
-      #   uses: actions/setup-python@v5 
-      #   with:
-      #     python-version: '3.10'
-
-      # - name: Install pipenv
-      #   run: |
-      #     cd starter/backend
-      #     python -m pip install --upgrade pipenv
-
-      # - name: Install dependencies
-      #   run: |
-      #     cd starter/backend
-      #     pipenv install --dev
-
-      # - name: Run test
-      #   run: |
-      #     cd starter/backend
-      #     pipenv run test
-
-  # build:
-  #   needs: [linting, test]
-  #   runs-on: ubuntu-latest
-        
-  #   steps:
-  #     - name: Check out repo
-  #       uses: actions/checkout@v3
-
-  #     - name: Build the Docker image
-  #       run: |
-  #         cd starter/backend
-  #         docker build . --file Dockerfile --tag backend-build-image
-        
-  #     # - name: Run the Docker container
-  #     #   run: |
-  #     #     cd starter/backend
-  #     #     ls
-  #     #     docker run --rm backend-build-image
 
   # build the docker image
   build:
