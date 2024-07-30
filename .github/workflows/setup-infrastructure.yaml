@@ -14,7 +14,6 @@ jobs:
         with:
           aws-access-key-id: ${{secrets.AWS_ACCESS_KEY_ID}}
           aws-secret-access-key: ${{secrets.AWS_SECRET_ACCESS_KEY}}
-          aws-session-token: ${{secrets.AWS_SESSION_TOKEN}}
           aws-region: us-east-1
 
       - name: Check out repo
@@ -29,17 +28,6 @@ jobs:
         run: |
           cd setup/terraform
           terraform init
-
-    #   - name: Terraform Validate
-    #     run: |
-    #       cd setup/terraform
-    #       terraform validate
-
-    #   - name: Terraform Plan
-    #     run: |
-    #       cd setup/terraform
-    #       terraform plan
-    #     continue-on-error: true
 
       - name: Terraform Apply
         run: |
