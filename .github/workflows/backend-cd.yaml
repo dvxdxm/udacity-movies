@@ -7,9 +7,15 @@ on:
   #     - main
 
   # trigger on every merge on main
-  push:
-    branches:
-      - main
+  # push:
+  #   branches:
+  #     - main
+
+  # run after frontend-cd is completed. Otherwise this workflow gets a timeout from aws when sending the image to ECR
+  workflow_run:
+    workflows: ["frontend-cd.yaml"]
+    types:
+      - completed
 
   workflow_dispatch:
 
