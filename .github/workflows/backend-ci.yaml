@@ -24,16 +24,19 @@ jobs:
       - name: Install Pipenv
         run: pip install pipenv --user   
       
-      - name: Check current folder
+      - name: Check current root folder
         run: ls
 
       - name: CD to starter
         run: cd starter
 
+      - name: Check current folder starter
+        run: ls
+
       - name: CD to backend
         run: cd backend  
 
-      - name: Check current folder
+      - name: Check current folder backend
         run: ls
 
       - name: Install dependencies
