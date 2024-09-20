@@ -25,7 +25,10 @@ jobs:
         run: pip install pipenv --user   
 
       - name: CD to backend
-        run: cd home/runner/work/udacity-movies/starter/backend
+        run: cd home/runner/work/udacity-movies
+
+      - name: Check current folder
+        run: ls
 
       - name: Install dependencies
         run: pipenv install
@@ -73,7 +76,7 @@ jobs:
         run: pip install pipenv --user
 
       - name: CD to backend
-        run: cd home/runner/work/udacity-movies/starter/backend
+        run: cd home/runner/work/udacity-movies
 
       - name: Install dependencies
         run: pipenv install
