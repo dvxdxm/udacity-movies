@@ -16,13 +16,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: CD to frontend
-        run: cd starter/frontend
-
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '20'
+
+      - name: CD to frontend
+        run: cd /starter/frontend
 
       - name: Install dependencies
         run: npm install
