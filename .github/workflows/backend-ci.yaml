@@ -27,8 +27,11 @@ jobs:
       - name: Check current folder
         run: ls
 
+      - name: CD to starter
+        run: cd starter
+
       - name: CD to backend
-        run: cd starter\backend
+        run: cd backend  
 
       - name: Check current folder
         run: ls
