@@ -22,7 +22,7 @@ jobs:
           node-version: '20'
 
       - name: CD to frontend
-        run: cd /starter/frontend
+        run: cd home/runner/work/udacity-movies/starter/frontend
 
       - name: Install dependencies
         run: npm install
@@ -43,7 +43,7 @@ jobs:
           node-version: '20'
 
       - name: CD to frontend
-        run: cd starter/frontend
+        run: cd home/runner/work/udacity-movies/starter/frontend
 
       - name: Install dependencies
         run: npm install
@@ -66,7 +66,7 @@ jobs:
           node-version: '20'
 
       - name: CD to frontend
-        run: cd starter/frontend
+        run: cd home/runner/work/udacity-movies/starter/frontend
 
       - name: Install dependencies
         run: npm install

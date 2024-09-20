@@ -25,7 +25,7 @@ jobs:
         run: pip install pipenv --user   
 
       - name: CD to backend
-        run: cd starter/backend
+        run: cd home/runner/work/udacity-movies/starter/backend
 
       - name: Install dependencies
         run: pipenv install
@@ -48,7 +48,7 @@ jobs:
         run: pip install pipenv --user
 
       - name: CD to backend
-        run: cd starter/backend
+        run: cd home/runner/work/udacity-movies/starter/backend
 
       - name: Install dependencies
         run: pipenv install
@@ -71,9 +71,9 @@ jobs:
           python-version: '3.10'
       - name: Install Pipenv
         run: pip install pipenv --user
-        
+
       - name: CD to backend
-        run: cd starter/backend
+        run: cd home/runner/work/udacity-movies/starter/backend
 
       - name: Install dependencies
         run: pipenv install
