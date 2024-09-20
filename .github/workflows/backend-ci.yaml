@@ -26,8 +26,9 @@ jobs:
       
       - name: Check current folder
         run: ls
+
       - name: CD to backend
-        run: cd home/runner/work/udacity-movies
+        run: cd starter/backend
 
       - name: Install dependencies
         run: pipenv install
