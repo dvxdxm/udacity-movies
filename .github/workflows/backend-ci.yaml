@@ -28,11 +28,11 @@ jobs:
         run: ls
 
       - name: CD to backend
-        run: cd starter/backend
+        run: cd starter\backend
 
       - name: Check current folder
         run: ls
-        
+
       - name: Install dependencies
         run: pipenv install
 
