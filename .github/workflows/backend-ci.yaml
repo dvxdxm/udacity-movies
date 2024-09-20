@@ -27,24 +27,11 @@ jobs:
       - name: Check current root folder
         run: ls
 
-      - name: CD to starter
+      - name: Install dependencies and Run lint
         run: |
           cd starter/backend
-
-      - name: Check current folder starter
-        run: ls
-
-      - name: CD to backend
-        run: cd backend  
-
-      - name: Check current folder backend
-        run: ls
-
-      - name: Install dependencies
-        run: pipenv install
-
-      - name: Run lint
-        run: pipenv run lint
+          pipenv install
+          pipenv run lint
 
   # Test Job
   test:
