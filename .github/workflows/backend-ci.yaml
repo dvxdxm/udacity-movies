@@ -28,7 +28,8 @@ jobs:
         run: ls
 
       - name: CD to starter
-        run: cd starter
+        run: |
+          cd starter/backend
 
       - name: Check current folder starter
         run: ls
