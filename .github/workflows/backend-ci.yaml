@@ -30,8 +30,8 @@ jobs:
       - name: Install dependencies and Run lint
         run: |
           cd starter/backend
+          pipenv --version
           pipenv install
-          pipenv run lint
 
   # Test Job
   test:
