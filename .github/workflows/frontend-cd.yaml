@@ -2,9 +2,9 @@ name: Frontend Continuous Deployment
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
+  # push:
+  #   branches:
+  #     - main
   pull_request:
     branches:
       - main
@@ -52,7 +52,7 @@ jobs:
           cd starter/frontend
           npm run test
 
-  build-frontend:
+  build-and-push-image-frontend:
     runs-on: ubuntu-latest
     needs: 
       - check-lint
@@ -71,29 +71,18 @@ jobs:
           cd starter/frontend
           npm install
 
-      - name: Build Docker image
-        run: |
-          cd starter/frontend
-          docker build --build-arg=REACT_APP_MOVIE_API_URL=http://localhost:5000 --tag=mp-frontend:latest .
-
-  ecr_login:
-    runs-on: ubuntu-latest
-    needs: build-frontend
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
       - name: Login to ECR
         uses: aws-actions/amazon-ecr-login@v1
         with:
           region: ${{ secrets.AWS_REGION }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}    
 
-  push_image_to_ecr:
-    runs-on: ubuntu-latest
-    needs: build-frontend
-    steps:
-      - name: Push image to ECR
-        run: docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/frontend:latest
+      - name: Build Docker image
+        run: |
+          cd starter/frontend
+          docker build --build-arg=REACT_APP_MOVIE_API_URL=http://localhost:5000 --tag=mp-frontend:latest .
+          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/frontend:latest
 
   deployment:
     runs-on: ubuntu-latest
