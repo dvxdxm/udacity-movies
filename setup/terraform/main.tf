@@ -275,7 +275,7 @@ resource "aws_codebuild_project" "codebuild" {
 
   source {
     type            = "GITHUB"
-    location        = "https://github.com/your-org/your-repo"
+    location        = "https://github.com/dvxdxm/udacity-movies"
     git_clone_depth = 1
     buildspec       = "buildspec.yml"
   }
@@ -313,7 +313,7 @@ resource "aws_iam_role_policy_attachment" "codebuild" {
 # Github Action role
 ####################
 resource "aws_iam_user" "github_action_user" {
-  name = "github-action-user"
+  name = "github-action-user-3"
 }
 
 resource "aws_iam_user_policy" "github_action_user_permission" {
@@ -324,7 +324,7 @@ resource "aws_iam_user_policy" "github_action_user_permission" {
 data "aws_iam_policy_document" "github_policy" {
   statement {
     effect    = "Allow"
-    actions   = ["ecr:*", "eks:*", "ec2:*", "iam:GetUser"]
+    actions   = ["ecr:*", "eks:*", "ec2:*"]
     resources = ["*"]
   }
 }

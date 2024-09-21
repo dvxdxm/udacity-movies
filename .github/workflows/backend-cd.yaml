@@ -1,4 +1,4 @@
-name: Backend Continuous Integration
+name: Backend Continuous Deployment
 
 on:
   workflow_dispatch:
@@ -61,7 +61,7 @@ jobs:
           cd starter/backend
           pipenv run test
 
-  build:
+  build-and-push-to-ecr:
     runs-on: ubuntu-latest
     needs: 
       - check-lint
@@ -70,10 +70,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
       - name: Install Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
+
       - name: Install Pipenv
         run: pip install pipenv --user
 
@@ -82,8 +90,35 @@ jobs:
           cd starter/backend
           pipenv install
 
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
       - name: Build Docker image
         run: |
           cd starter/backend
-          docker build --tag mp-backend:latest .
+          docker build --tag ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/backend:${{ github.run_number }} .
+          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/backend:${{ github.run_number }}
 
+  deployment:
+    runs-on: ubuntu-latest
+    needs: build-and-push-to-ecr
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Update kubernes
+        run: |
+          aws eks update-kubeconfig --region ${{ secrets.AWS_REGION }} --name cluster
+
+      - name: Deploy to AWS
+        run: |
+          cd starter/backend/k8s
+          kustomize edit set image backend=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/backend:${{ github.run_number }}
+          kustomize build | kubectl apply -f -
