@@ -1,4 +1,4 @@
-name: Frontend Continuous Integration
+name: Frontend Continuous Deployment
 
 on:
   workflow_dispatch:
@@ -74,7 +74,47 @@ jobs:
       - name: Build Docker image
         run: |
           cd starter/frontend
-          docker build --build-arg=REACT_APP_MOVIE_API_URL=http://localhost:5000 --tag=mp-frontend:latest .     
+          docker build --build-arg=REACT_APP_MOVIE_API_URL=http://localhost:5000 --tag=mp-frontend:latest .
 
+  ecr_login:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
 
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          region: ${{ secrets.AWS_REGION }}
 
+  push_image_to_ecr:
+    runs-on: ubuntu-latest
+    needs: build-frontend
+    steps:
+      - name: Push image to ECR
+        run: 017609045372.dkr.ecr.us-east-1.amazonaws.com/frontend:latest
+
+  deployment:
+    runs-on: ubuntu-latest
+    needs: push_image_to_ecr
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Set up kubectl
+        run: |
+          aws eks update-kubeconfig --region ${{ secrets.AWS_REGION }} --name cluster
+
+      - name: Deploy to EKS
+        run: |
+          cd starter/frontend/k8s
+          kustomize edit set image frontend=017609045372.dkr.ecr.us-east-1.amazonaws.com/frontend:latest
+          kustomize build | kubectl apply -f -
