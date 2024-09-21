@@ -93,7 +93,7 @@ jobs:
     needs: build-frontend
     steps:
       - name: Push image to ECR
-        run: 017609045372.dkr.ecr.us-east-1.amazonaws.com/frontend:latest
+        run: docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/frontend:latest
 
   deployment:
     runs-on: ubuntu-latest
@@ -116,5 +116,5 @@ jobs:
       - name: Deploy to EKS
         run: |
           cd starter/frontend/k8s
-          kustomize edit set image frontend=017609045372.dkr.ecr.us-east-1.amazonaws.com/frontend:latest
+          kustomize edit set image frontend=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/frontend:latest
           kustomize build | kubectl apply -f -
