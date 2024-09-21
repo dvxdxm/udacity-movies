@@ -31,7 +31,6 @@ jobs:
           cd starter/backend
           pipenv --version
           pipenv install
-          which flake8
 
       - name: Run check lint
         run: |
