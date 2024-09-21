@@ -22,16 +22,18 @@ jobs:
           python-version: '3.10'
 
       - name: Install Pipenv
-        run: pip install pipenv --user   
-      
-      - name: Check current root folder
-        run: ls
+        run: pip install pipenv --user
 
-      - name: Install dependencies and Run lint
+      - name: Install dependencies
         run: |
           cd starter/backend
           pipenv --version
           pipenv install
+
+      - name: Run check lint
+        run: |
+          cd starter/backend
+          pipenv run lint   
 
   # Test Job
   test:
@@ -44,17 +46,19 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
+
       - name: Install Pipenv
         run: pip install pipenv --user
 
-      - name: CD to backend
-        run: cd home/runner/work/udacity-movies/starter/backend
-
       - name: Install dependencies
-        run: pipenv install
+        run: |
+          cd starter/backend
+          pipenv install
 
-      - name: Run tests
-        run: pipenv run test
+      - name: Run check tests
+        run: |
+          cd starter/backend
+          pipenv run test
 
   build:
     runs-on: ubuntu-latest
@@ -72,13 +76,13 @@ jobs:
       - name: Install Pipenv
         run: pip install pipenv --user
 
-      - name: CD to backend
-        run: cd home/runner/work/udacity-movies
-
       - name: Install dependencies
-        run: pipenv install
+        run: |
+          cd starter/backend
+          pipenv install
 
       - name: Build Docker image
         run: |
+          cd starter/backend
           docker build --tag mp-backend:latest .
 
