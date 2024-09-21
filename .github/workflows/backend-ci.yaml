@@ -30,7 +30,6 @@ jobs:
       - name: Install dependencies and Run lint
         run: |
           cd starter/backend
-          ls
           pipenv install
           pipenv run lint
 
