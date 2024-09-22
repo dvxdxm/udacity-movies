@@ -23,15 +23,6 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Cache Validation
-        uses: actions/cache@v3
-        with:
-          path: |
-            starter/frontend/node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('starter/frontend/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-udacity-movies
-
       - name: Install dependencies
         run: |
           cd starter/frontend
@@ -52,15 +43,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-
-      - name: Cache Validation
-        uses: actions/cache@v3
-        with:
-          path: |
-            starter/frontend/node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('starter/frontend/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-udacity-movies
             
       - name: Install dependencies
         run: |
@@ -85,15 +67,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-
-      - name: Cache Validation
-        uses: actions/cache@v3
-        with:
-          path: |
-            starter/frontend/node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('starter/frontend/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-udacity-movies
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
