@@ -5,9 +5,13 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'starter/backend/**'
   pull_request:
     branches:
       - main
+    paths:
+      - 'starter/backend/**'
 
 jobs:
   check-lint:

@@ -2,12 +2,14 @@ name: Frontend Continuous Deployment
 
 on:
   workflow_dispatch:
-  # push:
-  #   branches:
-  #     - main
-  pull_request:
+  push:
     branches:
       - main
+    paths:
+      - 'starter/frontend/**'
+  # pull_request:
+  #   branches:
+  #     - main
 
 jobs:
   check-lint:
@@ -84,7 +86,7 @@ jobs:
       - name: Build and Push Docker image to ECR
         run: |
           cd starter/frontend
-          docker build --tag=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/frontend:${{ github.run_number }} .
+          docker build --build-arg=REACT_APP_MOVIE_API_URL=${{ secrets.AWS_ACCOUNT_ID }} --tag=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/frontend:${{ github.run_number }} .
           docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/frontend:${{ github.run_number }}
 
   deployment:
